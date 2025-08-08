@@ -77,7 +77,7 @@
 #define ReVsensor 4
 #define ReA 64
 #define ReB 32
-//#define ReA 16
+#define ReC 16
 #define ReFilter 128
 
 #define PrimBipo1 0
@@ -143,7 +143,7 @@ static settingAnalog_t settingAnalog = {
 // Timer ?
 
 static uint32_t timer = 0;
-static uint8_t stream[40] = {0};
+static uint8_t stream[30] = {0};
 static uint8_t index = 0;
 static uint8_t rxByte;
 
@@ -703,16 +703,16 @@ static void process_STATE_STANDBY(void) {
         CONTROL.state = STATE_CORTE_BIPOLAR;
 
         // --------------- SEND VALUES
-        SPI_ESU300(0, 16, 10);
+        SPI_ESU300(ModBipoCut, Rebipo, ReVsensor+PrimBipo2+ReIrange);
         MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 512);
         MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 2048);
-        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 2048);
-        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 2048);
-        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 2048);
-        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 4095);
         MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 2048);
-        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 2048);
-        DAC_DataWrite(512); // NOTE DAC 10 bits  
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 4095);
+        DAC_DataWrite(255); // NOTE DAC 10 bits  
 
         ENL_Set();
         printf("CUT BIPOLAR\r\n ");
@@ -720,26 +720,508 @@ static void process_STATE_STANDBY(void) {
         //------------------
         return;
     }
+    
+     value = !PBCOAG_Get() && PBCUT_Get();
+    if (value == true) {
+        // Change state to error
+        CONTROL.state = STATE_COAG_BIPOLAR;
+
+        // --------------- SEND VALUES
+        SPI_ESU300(ModBipoCut, Rebipo, ReVsensor+PrimBipo1+ReIrange);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 512);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 4095);
+        DAC_DataWrite(255); // NOTE DAC 10 bits  
+
+        ENL_Set();
+        printf("COAG BIPOLAR\r\n ");
+        // tone(buzzer, tonobcorte);
+        //------------------
+        return;
+    }
+     value = !PCUT_Get() || !HCUT1_Get();
+    if (value == true) {
+        // Change state to error
+        CONTROL.state = STATE_CORTE_MONO_1;
+
+        // --------------- SEND VALUES
+        SPI_ESU300(ModPureCut, Remono1+ReEN, PrimMono1);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 512);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 4095);
+        DAC_DataWrite(255); // NOTE DAC 10 bits  
+
+        ENL_Set();
+        printf("CORTE MONOPOLAR 1\r\n ");
+        
+        printf("Prueba SERCOM0 Panel Posterior Envio datos\r\n ");
+        // Test for USART5 --> POST
+        bool result;
+        printf("Test SERCOM 0\r\n");
+        uint8_t vector2[] = {"Data --> SERCOM0 Panel Posterior \r\n"};
+        result = SERCOM0_USART_Write(vector2, sizeof (vector2) - 1);
+        printf("Result SERCOM5 []: %u\r\n", result);
+        //
+        
+        // tone(buzzer, tonobcorte);
+        //------------------
+        return;
+    }
+ value = !PCOAG_Get() || !HCOAG1_Get();
+    if (value == true) {
+        // Change state to error
+        CONTROL.state = STATE_COAG_MONO_1;
+
+        // --------------- SEND VALUES
+        SPI_ESU300(ModNormalCoag, Remono1+ReEN, PrimMono2);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 512);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 4095);
+        DAC_DataWrite(255); // NOTE DAC 10 bits  
+
+        ENL_Set();
+        printf("COAG MONOPOLAR 1\r\n ");
+        // tone(buzzer, tonobcorte);
+        //------------------
+        return;
+    }
+     value = !HCUT2_Get();
+    if (value == true) {
+        // Change state to error
+        CONTROL.state = STATE_CORTE_MONO_2;
+
+        // --------------- SEND VALUES
+        SPI_ESU300(ModPureCut, Remono2+ReEN, PrimMono1);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 512);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 4095);
+        DAC_DataWrite(255); // NOTE DAC 10 bits  
+
+        ENL_Set();
+        printf("CORTE MONOPOLAR 2\r\n ");
+        // tone(buzzer, tonobcorte);
+        //------------------
+        return;
+    }
+ value = !HCOAG2_Get();
+    if (value == true) {
+        // Change state to error
+        CONTROL.state = STATE_COAG_MONO_2;
+
+        // --------------- SEND VALUES
+        SPI_ESU300(ModNormalCoag, Remono2+ReEN, PrimMono2);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 512);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 4095);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 4095);
+        DAC_DataWrite(255); // NOTE DAC 10 bits  
+
+        ENL_Set();
+        printf("COAG MONOPOLAR 2\r\n ");
+        // tone(buzzer, tonobcorte);
+        //------------------
+        return;
+    }
 };
 
 static void process_STATE_CORTE_MONO_1(void) {
+     // Check for inputs
+    bool value = !PCUT_Get() || !HCUT1_Get();
+
+    if (value == false) {
+        // Change state to error
+        CONTROL.state = STATE_STANDBY;
+
+        // --------------- SEND VALUES
+        ENL_Clear();
+        DAC_DataWrite(0); // NOTE DAC 10 bits
+        MAIN_delay_ms(10);
+        SPI_ESU300(0, 0, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 0);
+        printf("INACTIVE ");
+    }
+    if (SERCOM3_USART_ReceiverIsReady()) {
+        rxByte = SERCOM3_USART_ReadByte();
+       // printf("echo : %u \r\n", rxByte);
+
+        // ECHO 
+
+        // Process data 
+        // Process data 
+        switch (rxByte) {
+            case 2:
+                printf("State of frame\r\n");
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+                break;
+            case 3:
+                printf("End of frame\r\n");
+
+                printf("Data %u\r\n", stream[0]);
+                printf("Data %u\r\n", stream[1]);
+                printf("Data %u\r\n", stream[2]);
+
+                printf("DAC  %u\r\n", stream[3]);
+                printf("DAC  %u\r\n", stream[4]);
+                printf("DAC  %u\r\n", stream[5]);
+                printf("DAC  %u\r\n", stream[6]);
+                printf("DAC  %u\r\n", stream[7]);
+                printf("DAC  %u\r\n", stream[8]);
+                printf("DAC  %u\r\n", stream[9]);
+                printf("DAC  %u\r\n", stream[10]);
+
+                printf("dac  %u\r\n", stream[11]);
+/*
+                // Data
+                SPI_ESU300(stream[0], stream[1], stream[2]);
+
+                // Dac
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[4]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[9]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
+
+                //Dac
+                DAC_DataWrite(stream[11]);
+*/
+               // Data
+               // SPI_ESU300(stream[0], stream[1], stream[2]);
+
+                // Dac
+               // MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[2]*16);   //4
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+               //   MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[1]*16);   //9
+               // MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
+
+                //Dac
+                DAC_DataWrite(stream[0]*4);  //11    
+                
+                
+                // Clear
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+
+                break;
+            default:
+                printf("Default\r\n");
+                if (index < sizeof (stream))
+                    stream[index++] = rxByte;
+                break;
+        }
+    }
 };
 
 static void process_STATE_COAG_MONO_1(void) {
+     // Check for inputs
+    bool value = !PCOAG_Get() || !HCOAG1_Get();
+
+    if (value == false) {
+        // Change state to error
+        CONTROL.state = STATE_STANDBY;
+
+        // --------------- SEND VALUES
+        ENL_Clear();
+        DAC_DataWrite(0); // NOTE DAC 10 bits
+        MAIN_delay_ms(10);
+        SPI_ESU300(0, 0, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 0);
+        printf("INACTIVE ");
+    }
+    if (SERCOM3_USART_ReceiverIsReady()) {
+        rxByte = SERCOM3_USART_ReadByte();
+       // printf("echo : %u \r\n", rxByte);
+
+        // ECHO 
+
+        // Process data 
+        // Process data 
+        switch (rxByte) {
+            case 2:
+                printf("State of frame\r\n");
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+                break;
+            case 3:
+                printf("End of frame\r\n");
+
+                printf("Data %u\r\n", stream[0]);
+                printf("Data %u\r\n", stream[1]);
+                printf("Data %u\r\n", stream[2]);
+
+                printf("DAC  %u\r\n", stream[3]);
+                printf("DAC  %u\r\n", stream[4]);
+                printf("DAC  %u\r\n", stream[5]);
+                printf("DAC  %u\r\n", stream[6]);
+                printf("DAC  %u\r\n", stream[7]);
+                printf("DAC  %u\r\n", stream[8]);
+                printf("DAC  %u\r\n", stream[9]);
+                printf("DAC  %u\r\n", stream[10]);
+
+                printf("dac  %u\r\n", stream[11]);
+
+/*
+                // Data
+                SPI_ESU300(stream[0], stream[1], stream[2]);
+
+                // Dac
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[4]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[9]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
+
+                //Dac
+                DAC_DataWrite(stream[11]);
+ */
+                // Data
+               // SPI_ESU300(stream[0], stream[1], stream[2]);
+
+                // Dac
+               // MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[2]*16);   //4
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+               //   MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[1]*16);   //9
+               // MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
+
+                //Dac
+                DAC_DataWrite(stream[0]*4);  //11    
+                
+
+                // Clear
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+
+                break;
+            default:
+                printf("Default\r\n");
+                if (index < sizeof (stream))
+                    stream[index++] = rxByte;
+                break;
+        }
+    }
 };
 
 static void process_STATE_CORTE_MONO_2(void) {
+     // Check for inputs
+    bool value = !HCUT2_Get();
+
+    if (value == false) {
+        // Change state to error
+        CONTROL.state = STATE_STANDBY;
+
+        // --------------- SEND VALUES
+        ENL_Clear();
+        DAC_DataWrite(0); // NOTE DAC 10 bits
+        MAIN_delay_ms(10);
+        SPI_ESU300(0, 0, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 0);
+        printf("INACTIVE ");
+    }
+    if (SERCOM3_USART_ReceiverIsReady()) {
+        rxByte = SERCOM3_USART_ReadByte();
+       // printf("echo : %u \r\n", rxByte);
+
+        // ECHO 
+
+        // Process data 
+        // Process data 
+        switch (rxByte) {
+            case 2:
+                printf("State of frame\r\n");
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+                break;
+            case 3:
+                printf("End of frame\r\n");
+
+                printf("Data %u\r\n", stream[0]);
+                printf("Data %u\r\n", stream[1]);
+                printf("Data %u\r\n", stream[2]);
+
+                printf("DAC  %u\r\n", stream[3]);
+                printf("DAC  %u\r\n", stream[4]);
+                printf("DAC  %u\r\n", stream[5]);
+                printf("DAC  %u\r\n", stream[6]);
+                printf("DAC  %u\r\n", stream[7]);
+                printf("DAC  %u\r\n", stream[8]);
+                printf("DAC  %u\r\n", stream[9]);
+                printf("DAC  %u\r\n", stream[10]);
+
+                printf("dac  %u\r\n", stream[11]);
+
+                // Data
+                SPI_ESU300(stream[0], stream[1], stream[2]);
+
+                // Dac
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[4]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[9]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
+
+                //Dac
+                DAC_DataWrite(stream[11]);
+
+                // Clear
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+
+                break;
+            default:
+                printf("Default\r\n");
+                if (index < sizeof (stream))
+                    stream[index++] = rxByte;
+                break;
+        }
+    }
 };
 
 static void process_STATE_COAG_MONO_2(void) {
-};
+     // Check for inputs
+    bool value = !HCOAG2_Get();
 
-static uint8_t hexToVal(uint8_t ascii) {
-    if (ascii >= '0' && ascii <= '9') return ascii - '0';
-    if (ascii >= 'A' && ascii <= 'F') return ascii - 'A' + 10;
-    if (ascii >= 'a' && ascii <= 'f') return ascii - 'a' + 10;
-    return 0; // todo
-}
+    if (value == false) {
+        // Change state to error
+        CONTROL.state = STATE_STANDBY;
+
+        // --------------- SEND VALUES
+        ENL_Clear();
+        DAC_DataWrite(0); // NOTE DAC 10 bits
+        MAIN_delay_ms(10);
+        SPI_ESU300(0, 0, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 0);
+        printf("INACTIVE ");
+    }
+    if (SERCOM3_USART_ReceiverIsReady()) {
+        rxByte = SERCOM3_USART_ReadByte();
+       // printf("echo : %u \r\n", rxByte);
+
+        // ECHO 
+
+        // Process data 
+        // Process data 
+        switch (rxByte) {
+            case 2:
+                printf("State of frame\r\n");
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+                break;
+            case 3:
+                printf("End of frame\r\n");
+
+                printf("Data %u\r\n", stream[0]);
+                printf("Data %u\r\n", stream[1]);
+                printf("Data %u\r\n", stream[2]);
+
+                printf("DAC  %u\r\n", stream[3]);
+                printf("DAC  %u\r\n", stream[4]);
+                printf("DAC  %u\r\n", stream[5]);
+                printf("DAC  %u\r\n", stream[6]);
+                printf("DAC  %u\r\n", stream[7]);
+                printf("DAC  %u\r\n", stream[8]);
+                printf("DAC  %u\r\n", stream[9]);
+                printf("DAC  %u\r\n", stream[10]);
+
+                printf("dac  %u\r\n", stream[11]);
+
+                // Data
+                SPI_ESU300(stream[0], stream[1], stream[2]);
+
+                // Dac
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[4]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[9]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
+
+                //Dac
+                DAC_DataWrite(stream[11]);
+
+                // Clear
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+
+                break;
+            default:
+                printf("Default\r\n");
+                if (index < sizeof (stream))
+                    stream[index++] = rxByte;
+                break;
+        }
+    }
+};
 
 static void process_STATE_CORTE_BIPOLAR(void) {
     // Check for inputs
@@ -774,7 +1256,7 @@ static void process_STATE_CORTE_BIPOLAR(void) {
     //=================================================================
     if (SERCOM3_USART_ReceiverIsReady()) {
         rxByte = SERCOM3_USART_ReadByte();
-        printf("echo : %u \r\n", rxByte);
+       // printf("echo : %u \r\n", rxByte);
 
         // ECHO 
 
@@ -789,38 +1271,139 @@ static void process_STATE_CORTE_BIPOLAR(void) {
             case 3:
                 printf("End of frame\r\n");
 
-                printf("Data %X\r\n", stream[0]);
-                printf("Data %X\r\n", stream[1]);
-                printf("Data %X\r\n", stream[2]);
+                printf("Data %u\r\n", stream[0]);
+                printf("Data %u\r\n", stream[1]);
+                printf("Data %u\r\n", stream[2]);
 
-                // External DACF
-                printf("DAC 1 %X %X\r\n", stream[3], stream[4]);
-                printf("DAC 2 %X %X\r\n", stream[5], stream[6]);
-                printf("DAC 3 %X %X\r\n", stream[7], stream[8]);
-                printf("DAC 4 %X %X\r\n", stream[9], stream[10]);
-                printf("DAC 5 %X %X\r\n", stream[11], stream[12]);
-                printf("DAC 6 %X %X\r\n", stream[13], stream[14]);
-                printf("DAC 7 %X %X\r\n", stream[15], stream[16]);
-                printf("DAC 8 %X %X\r\n", stream[17], stream[18]);
+                printf("DAC  %u\r\n", stream[3]);
+                printf("DAC  %u\r\n", stream[4]);
+                printf("DAC  %u\r\n", stream[5]);
+                printf("DAC  %u\r\n", stream[6]);
+                printf("DAC  %u\r\n", stream[7]);
+                printf("DAC  %u\r\n", stream[8]);
+                printf("DAC  %u\r\n", stream[9]);
+                printf("DAC  %u\r\n", stream[10]);
 
-                // Internal dac
-                printf("dac   %X %X\r\n", stream[19], stream[20]);
+                printf("dac  %u\r\n", stream[11]);
 
+                /*
                 // Data
                 SPI_ESU300(stream[0], stream[1], stream[2]);
 
                 // Dac
-                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, hexToVal(stream[3])*256 + hexToVal(stream[4]));
-                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, hexToVal(stream[7])*256 + hexToVal(stream[6]));
-                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, hexToVal(stream[9])*256 + hexToVal(stream[8]));
-                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, hexToVal(stream[11])*256 + hexToVal(stream[10]));
-                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, hexToVal(stream[13])*256 + hexToVal(stream[12]));
-                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, hexToVal(stream[15])*256 + hexToVal(stream[14]));
-                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, hexToVal(stream[17])*256 + hexToVal(stream[16]));
-                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, hexToVal(stream[19])*256 + hexToVal(stream[18]));
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[4]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[9]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
 
                 //Dac
-                DAC_DataWrite(hexToVal(stream[19])*256 + hexToVal(stream[20]));
+                DAC_DataWrite(stream[11]);
+*/
+                
+               // Data
+               // SPI_ESU300(stream[0], stream[1], stream[2]);
+
+                // Dac
+               // MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[2]*16);   //4
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+               //   MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[1]*16);   //9
+               // MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
+
+                //Dac
+                DAC_DataWrite(stream[0]*4);  //11    
+                
+                // Clear
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+
+                break;
+            default:
+                printf("Default\r\n");
+                if (index < sizeof (stream))
+                    stream[index++] = rxByte;
+                break;
+        }
+    }
+};
+
+static void process_STATE_STATE_COAG_BIPOLAR(void) {
+      // Check for inputs
+    bool value = !PBCOAG_Get() && PBCUT_Get();
+
+    if (value == false) {
+        // Change state to error
+        CONTROL.state = STATE_STANDBY;
+
+        // --------------- SEND VALUES
+        ENL_Clear();
+        DAC_DataWrite(0); // NOTE DAC 10 bits
+        MAIN_delay_ms(10);
+        SPI_ESU300(0, 0, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, 2048);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, 0);
+        MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, 0);
+        printf("INACTIVE ");
+    }
+    if (SERCOM3_USART_ReceiverIsReady()) {
+        rxByte = SERCOM3_USART_ReadByte();
+       // printf("echo : %u \r\n", rxByte);
+
+        // ECHO 
+
+        // Process data 
+        // Process data 
+        switch (rxByte) {
+            case 2:
+                printf("State of frame\r\n");
+                memset(stream, 0, sizeof (stream));
+                index = 0;
+                break;
+            case 3:
+                printf("End of frame\r\n");
+
+                printf("Data %u\r\n", stream[0]);
+                printf("Data %u\r\n", stream[1]);
+                printf("Data %u\r\n", stream[2]);
+
+                printf("DAC  %u\r\n", stream[3]);
+                printf("DAC  %u\r\n", stream[4]);
+                printf("DAC  %u\r\n", stream[5]);
+                printf("DAC  %u\r\n", stream[6]);
+                printf("DAC  %u\r\n", stream[7]);
+                printf("DAC  %u\r\n", stream[8]);
+                printf("DAC  %u\r\n", stream[9]);
+                printf("DAC  %u\r\n", stream[10]);
+
+                printf("dac  %u\r\n", stream[11]);
+
+                // Data
+               // SPI_ESU300(stream[0], stream[1], stream[2]);
+
+                // Dac
+               // MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_0, stream[3]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_1, stream[2]*16);   //4
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_2, stream[5]);
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_3, stream[6]);
+               //   MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_4, stream[7]);
+               //  MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_5, stream[8]);
+                MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_6, stream[1]*16);   //9
+               // MCP47FEB28_WriteDAC(MCP47FEB28_CHANNEL_7, stream[10]);
+
+                //Dac
+                DAC_DataWrite(stream[0]*4);  //11
 
                 // Clear
                 memset(stream, 0, sizeof (stream));
@@ -829,14 +1412,11 @@ static void process_STATE_CORTE_BIPOLAR(void) {
                 break;
             default:
                 printf("Default\r\n");
-                if (index < (sizeof (stream) - 1))
+                if (index < sizeof (stream))
                     stream[index++] = rxByte;
                 break;
         }
     }
-};
-
-static void process_STATE_STATE_COAG_BIPOLAR(void) {
 };
 
 static void process_STATE_TURNING_OFF(void) {
