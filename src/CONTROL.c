@@ -32,6 +32,8 @@
 #define tonobcoag  550    //tono de Coagulación Bipolar
 #define tonoCQM  660    //Tono de error CQM (emitir dos beep)
 
+// cambio marcos.
+
 #define timeon  500
 #define timeoff  1500
 #define timemode  5
