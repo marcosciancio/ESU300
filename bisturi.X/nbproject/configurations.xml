@@ -145,20 +145,20 @@
                      displayName="Bisturi_default"
                      projectFiles="true">
         <logicalFolder name="components" displayName="components" projectFiles="true">
-          <itemPath>Bisturi_default/components/stdio.yml</itemPath>
-          <itemPath>Bisturi_default/components/core.yml</itemPath>
-          <itemPath>Bisturi_default/components/dfp.yml</itemPath>
-          <itemPath>Bisturi_default/components/dac.yml</itemPath>
-          <itemPath>Bisturi_default/components/sercom4.yml</itemPath>
-          <itemPath>Bisturi_default/components/evsys.yml</itemPath>
-          <itemPath>Bisturi_default/components/sercom2.yml</itemPath>
-          <itemPath>Bisturi_default/components/ram.yml</itemPath>
-          <itemPath>Bisturi_default/components/sercom0.yml</itemPath>
           <itemPath>Bisturi_default/components/nvmctrl.yml</itemPath>
           <itemPath>Bisturi_default/components/adc.yml</itemPath>
-          <itemPath>Bisturi_default/components/sercom3.yml</itemPath>
+          <itemPath>Bisturi_default/components/evsys.yml</itemPath>
+          <itemPath>Bisturi_default/components/ram.yml</itemPath>
+          <itemPath>Bisturi_default/components/sercom0.yml</itemPath>
+          <itemPath>Bisturi_default/components/sercom2.yml</itemPath>
+          <itemPath>Bisturi_default/components/stdio.yml</itemPath>
+          <itemPath>Bisturi_default/components/dac.yml</itemPath>
+          <itemPath>Bisturi_default/components/sercom4.yml</itemPath>
           <itemPath>Bisturi_default/components/cmsis.yml</itemPath>
+          <itemPath>Bisturi_default/components/core.yml</itemPath>
+          <itemPath>Bisturi_default/components/dfp.yml</itemPath>
           <itemPath>Bisturi_default/components/sercom1.yml</itemPath>
+          <itemPath>Bisturi_default/components/sercom3.yml</itemPath>
         </logicalFolder>
         <itemPath>Bisturi_default/mcc-config.mc4</itemPath>
       </logicalFolder>
@@ -318,7 +318,7 @@
         <property key="communication.speed" value="4"/>
         <property key="debugoptions.debug-startup" value="Use system settings"/>
         <property key="debugoptions.reset-behaviour" value="Use system settings"/>
-        <property key="debugoptions.useswbreakpoints" value="true"/>
+        <property key="debugoptions.useswbreakpoints" value="false"/>
         <property key="event.recorder.debugger.behavior" value="Running"/>
         <property key="event.recorder.enabled" value="false"/>
         <property key="event.recorder.scvd.files" value=""/>
