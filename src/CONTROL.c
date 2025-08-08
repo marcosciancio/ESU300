@@ -764,15 +764,15 @@ static void process_STATE_STANDBY(void) {
         ENL_Set();
         printf("CORTE MONOPOLAR 1\r\n ");
         
-        printf("Prueba SERCOM0 Panel Posterior Envio datos\r\n ");
+       // printf("Prueba SERCOM0 Panel Posterior Envio datos\r\n ");
         // Test for USART5 --> POST
-        bool result;
+       /* bool result;
         printf("Test SERCOM 0\r\n");
         uint8_t vector2[] = {"Data --> SERCOM0 Panel Posterior \r\n"};
         result = SERCOM0_USART_Write(vector2, sizeof (vector2) - 1);
         printf("Result SERCOM5 []: %u\r\n", result);
         //
-        
+        */
         // tone(buzzer, tonobcorte);
         //------------------
         return;
